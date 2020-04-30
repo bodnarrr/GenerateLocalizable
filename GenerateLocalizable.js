@@ -236,7 +236,9 @@ function parseToJSON(rowsArray) {
 		langObj["language"] = lang;
 		let contents = [];
 		for (let j = 1; j < rowsArray.length; j++) {
-			let term = rowsArray[j][0];
+			// For the first column empty
+			// Previously was: let term = rowsArray[j][0];
+			let term = rowsArray[j][1];
 			let def = rowsArray[j][i];
 			let termTemp = {};
 			termTemp["key"] = term;
