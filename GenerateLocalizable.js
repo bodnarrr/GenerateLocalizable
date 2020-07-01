@@ -1,10 +1,7 @@
 const exec = require('child_process').exec;
 const fs = require('fs');
 const readline = require('readline');
-const {
-	google
-} = require('googleapis');
-const uuidv1 = require('uuid/v1');
+const { google } = require('googleapis');
 
 // If modifying these scopes, delete token.json.
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
@@ -236,8 +233,6 @@ function parseToJSON(rowsArray) {
 		langObj["language"] = lang;
 		let contents = [];
 		for (let j = 1; j < rowsArray.length; j++) {
-			// For the first column empty
-			// Previously was: let term = rowsArray[j][0];
 			let term = rowsArray[j][1];
 			let def = rowsArray[j][i];
 			let termTemp = {};
@@ -275,17 +270,24 @@ function saveToDisk(objectType, translationsJSONObject) {
 }
 
 function makeLocalizableFiles(sourceJSONFilePath, exportDirPath, launchMode) {
-	return new Promise((resolve, reject) => {
-		console.log("Exporting to " + exportDirPath);
-		exec("chmod +x WriteLocalizable.swift")
-		exec("./WriteLocalizable.swift" + " -i " + sourceJSONFilePath + " -o " + exportDirPath + " -m " + launchMode, (err, stdout, stderr) => {
-			if (err) {
-				console.trace();
-				reject(err)
-			} else {
-				// console.log("Export of " + launchMode + " succeeded! 🤩");
-				resolve("Export of " + launchMode + " succeeded! 🤩")
-			}
+	return compileSwift().then(() => {
+		return new Promise((resolve, reject) => {
+			exec("./WriteLocalizable" + " -i " + sourceJSONFilePath + " -o " + exportDirPath + " -m " + launchMode, (err, stdout, stderr) => {
+				if (err) {
+					console.trace();
+					reject(err)
+				} else {
+					resolve("Export of " + launchMode + " succeeded! 🤩")
+				}
+			});
 		});
 	});
+
+
+	function compileSwift() {
+		return new Promise((resolve, reject) => {
+			exec("swiftc WriteLocalizable.swift");
+			setTimeout(resolve, 2000);
+		});
+	}
 }
