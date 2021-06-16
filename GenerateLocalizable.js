@@ -12,14 +12,27 @@ const TOKEN_PATH = 'token.json';
 const EXPORT_PATH_TOKEN = '-e';
 const TARGET_SHEET_ID_TOKEN = '-i';
 const TARGET_MODE_TOKEN = '-m';
+const CREDENTIALS_PATH = '-c';
 
 // Launch modes
 const LOCALIZABLE_STINGS_MODE = "strings";
 const LOCALIZABLE_PLIST_MODE = "plist";
 const LOCALIZABLE_STINGS_PLIST_MODE = "strings+plist";
 
+// Write Localizable binary
+const WRITE_LOCALIZABLE = "/Users/<USERNAME>/Path/To/WriteLocalizable";
+
+let credentialsPathIndex = process.argv.indexOf(CREDENTIALS_PATH);
+let credentialsFilePath = "";
+
+if ((credentialsPathIndex + 1) > 0) {
+	credentialsFilePath = process.argv[credentialsPathIndex + 1];
+} else {
+	return console.log("🚨 Please set path to credentials file");
+}
+
 // Load client secrets from a local file.
-fs.readFile('credentials.json', (err, content) => {
+fs.readFile(credentialsFilePath, (err, content) => {
 	if (err) return console.log('Error loading client secret file:', err);
 
 	let targetSheetID = "";
@@ -272,7 +285,7 @@ function saveToDisk(objectType, translationsJSONObject) {
 function makeLocalizableFiles(sourceJSONFilePath, exportDirPath, launchMode) {
 	return compileSwift().then(() => {
 		return new Promise((resolve, reject) => {
-			exec("./WriteLocalizable" + " -i " + sourceJSONFilePath + " -o " + exportDirPath + " -m " + launchMode, (err, stdout, stderr) => {
+			exec(WRITE_LOCALIZABLE + " -i " + sourceJSONFilePath + " -o " + exportDirPath + " -m " + launchMode, (err, stdout, stderr) => {
 				if (err) {
 					console.trace();
 					reject(err)
